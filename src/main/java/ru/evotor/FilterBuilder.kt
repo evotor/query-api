@@ -25,7 +25,7 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, T>(tableUri: Uri
         }
     }
 
-    internal fun <V> addFieldFilter(fieldName: String): FieldFilter<V, Q, S, T> {
+    fun <V> addFieldFilter(fieldName: String): FieldFilter<V, Q, S, T> {
         return object : FieldFilter<V, Q, S, T>(fieldName) {
             override fun appendResult(edition: String): Executor<Q, S, T> {
                 executor.selection.append(edition)
@@ -45,7 +45,7 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, T>(tableUri: Uri
 
         protected abstract val currentSortOrder: S
 
-        internal fun addFieldSorter(fieldName: String): FieldSorter<S> {
+        fun addFieldSorter(fieldName: String): FieldSorter<S> {
             return object : FieldSorter<S>(fieldName) {
                 override fun appendResult(edition: String): S {
                     value.append(edition)
