@@ -16,6 +16,8 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    testImplementation 'junit:junit:4.12'
+    testImplementation "org.robolectric:robolectric:3.7.1"
 }
 
 buildscript {

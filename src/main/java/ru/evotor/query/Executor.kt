@@ -1,4 +1,4 @@
-package ru.evotor
+package ru.evotor.query
 
 import android.content.Context
 import android.net.Uri

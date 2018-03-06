@@ -1,4 +1,4 @@
-package ru.evotor
+package ru.evotor.query
 
 /**
  * Created by a.lunkov on 01.03.2018.
