@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="C:\Users\a.lunkov\Documents\query-api\src\main\assets"/><source path="C:\Users\a.lunkov\Documents\query-api\build\generated\assets\shaders\debug"/></dataSet><dataSet config="debug"><source path="C:\Users\a.lunkov\Documents\query-api\src\debug\assets"/></dataSet></merger>
+<merger version="3"><dataSet config="main"><source path="C:\Users\a.lunkov\Documents\revo2\query-api\src\main\assets"/><source path="C:\Users\a.lunkov\Documents\revo2\query-api\build\generated\assets\shaders\debug"/></dataSet><dataSet config="debug"><source path="C:\Users\a.lunkov\Documents\revo2\query-api\src\debug\assets"/></dataSet></merger>
