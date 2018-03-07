@@ -7,16 +7,22 @@ package ru.evotor.query
 abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, T>(private val fieldName: String) {
 
     fun equal(value: V?): Executor<Q, S, T> {
+        if (value == null) {
+            return appendResult("$fieldName IS NULL")
+        }
         return equalNotEqual("=", value)
     }
 
     fun notEqual(value: V?): Executor<Q, S, T> {
+        if (value == null) {
+            return appendResult("$fieldName IS NOT NULL")
+        }
         return equalNotEqual("!=", value)
     }
 
-    private fun equalNotEqual(operator: String, value: V?): Executor<Q, S, T> {
+    private fun equalNotEqual(operator: String, value: V): Executor<Q, S, T> {
         var result = fieldName + operator
-        result += value?.toString() ?: "null"
+        result += if(value is String || value is Enum<*>) "\"$value\"" else "$value"
         return appendResult(result)
     }
 
@@ -38,7 +44,7 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, T>(private val 
     }
 
     fun like(text: String): Executor<Q, S, T> {
-        return appendResult("$fieldName LIKE $text")
+        return appendResult("$fieldName LIKE \"$text\"")
     }
 
     fun between(leftValue: V, rightValue: V): Executor<Q, S, T> {
@@ -64,7 +70,7 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, T>(private val 
     private fun insideNotInside(operator: String, values: List<V>): Executor<Q, S, T> {
         val result = StringBuilder()
         values.forEach {
-            result.append("$it,")
+            result.append(if(it is String || it is Enum<*>) "\"$it,\"" else "$it,")
         }
         result.setCharAt(result.length - 1, ')')
         return appendResult("$fieldName $operator ($result")

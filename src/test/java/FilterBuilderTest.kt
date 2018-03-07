@@ -17,7 +17,7 @@ class FilterBuilderTest {
     @Test
     fun testMyEntityFilterBuilder() {
         Assert.assertEquals(
-                "UUID=someUuid AND ALCOHOL_PRODUCT_KIND_CODE=null OR (PRICE_OUT IN (1,2,3) AND PARENT_UUID!=null AND (ALCOHOL_PRODUCT_KIND_CODE>=10 AND ENUM_FIELD=FIRST_VALUE)) AND PRICE_OUT<4",
+                "UUID=\"someUuid\" AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IN (1,2,3) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=10 AND ENUM_FIELD=\"FIRST_VALUE\")) AND PRICE_OUT<4",
                 MyEntityFilterBuilder()
                         .uuid.equal("someUuid")
                         .and().alcoholProductKindCode.equal(null)

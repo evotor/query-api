@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.github.dcendents.android-maven'
-group='com.github.evotor'
+group = 'com.github.evotor'
 
 android {
     compileSdkVersion 27
