@@ -12,8 +12,8 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, T>(private val tableU
     protected abstract val currentQuery: Q
 
     internal var selection = StringBuilder()
-    private var sortOrderValue: String = ""
-    private var limitValue: String = ""
+    private var sortOrderValue = ""
+    private var limitValue = ""
 
     fun and(intersection: Executor<Q, S, T>): Executor<Q, S, T> {
         selection.append(" AND (").append(intersection.selection).append(")")
@@ -54,17 +54,6 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, T>(private val tableU
                 null,
                 if(sortOrderLimit.isEmpty()) null else sortOrderLimit
         )) {
-            override fun toList(): List<T>? {
-                var result: List<T>? = null
-                if(moveToFirst()) {
-                    result = ArrayList()
-                    while (moveToNext()) {
-                        result.add(getValue())
-                    }
-                }
-                return result
-            }
-
             override fun getValue(): T {
                 return this@Executor.getValue(this)
             }
