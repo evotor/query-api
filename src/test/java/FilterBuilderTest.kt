@@ -36,6 +36,91 @@ class FilterBuilderTest {
     }
 
     @Test
+    fun testInside() {
+        Assert.assertEquals(
+                "UUID IN (\"1\",\"2\")",
+                MyEntityFilterBuilder()
+                        .uuid.inside(arrayListOf("1", "2"))
+                        .selection.toString()
+        )
+
+        Assert.assertEquals(
+                "UUID IN (\"(\",\")\")",
+                MyEntityFilterBuilder()
+                        .uuid.inside(arrayListOf("(", ")"))
+                        .selection.toString()
+        )
+
+        Assert.assertEquals(
+                "UUID IN ()",
+                MyEntityFilterBuilder()
+                        .uuid.inside(arrayListOf())
+                        .selection.toString()
+        )
+
+        Assert.assertEquals(
+                "UUID NOT IN ()",
+                MyEntityFilterBuilder()
+                        .uuid.notInside(arrayListOf())
+                        .selection.toString()
+        )
+    }
+
+    @Test
+    fun testBetween() {
+        Assert.assertEquals(
+                "UUID BETWEEN \"1\" AND \"100\")",
+                MyEntityFilterBuilder()
+                        .uuid.between("1", "100")
+                        .selection.toString()
+        )
+    }
+
+    @Test
+    fun testGreater() {
+        Assert.assertEquals(
+                "UUID>\"5 AND TEST = 6\\\"\\\"\"",
+                MyEntityFilterBuilder()
+                        .uuid.greater("5 AND TEST = 6\"\"", false)
+                        .selection.toString()
+        )
+
+        Assert.assertEquals(
+                "UUID>=\"1\")",
+                MyEntityFilterBuilder()
+                        .uuid.greater("1", true)
+                        .selection.toString()
+        )
+    }
+
+    @Test
+    fun testLower() {
+        Assert.assertEquals(
+                "UUID<\"5 AND TEST = 6\\\"\\\"\"",
+                MyEntityFilterBuilder()
+                        .uuid.lower("5 AND TEST = 6\"\"", false)
+                        .selection.toString()
+        )
+
+        Assert.assertEquals(
+                "UUID<=\"1\")",
+                MyEntityFilterBuilder()
+                        .uuid.lower("1", true)
+                        .selection.toString()
+        )
+    }
+
+    @Test
+    fun testLike() {
+        Assert.assertEquals(
+                "UUID LIKE \"2%\"",
+                MyEntityFilterBuilder()
+                        .uuid.like("2%")
+                        .selection.toString()
+        )
+    }
+
+    @Test
     fun testSortOrderByOneField() {
         Assert.assertEquals(
                 "PRICE_OUT ASC",
