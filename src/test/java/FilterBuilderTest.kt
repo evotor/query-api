@@ -35,7 +35,62 @@ class FilterBuilderTest {
         )
     }
 
-    internal inner class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEntityFilterBuilder.SortOrder, String>(Uri.parse("http://google.com")) {
+    @Test
+    fun testSortOrderByOneField() {
+        Assert.assertEquals(
+                "PRICE_OUT ASC",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .sortOrder(MyEntityFilterBuilder.SortOrder().price.asc())
+                        .sortOrderValue
+        )
+
+        Assert.assertEquals(
+                "PRICE_OUT DESC",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .sortOrder(MyEntityFilterBuilder.SortOrder().price.desc())
+                        .sortOrderValue
+        )
+    }
+
+    @Test
+    fun testSortOrderByManyField() {
+        Assert.assertEquals(
+                "PRICE_OUT ASC, ALCOHOL_PRODUCT_KIND_CODE DESC",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .sortOrder(MyEntityFilterBuilder.SortOrder()
+                                .price.asc()
+                                .alcoholProductKindCode.desc())
+                        .sortOrderValue
+        )
+
+        Assert.assertEquals(
+                "PRICE_OUT ASC, ALCOHOL_PRODUCT_KIND_CODE DESC, ENUM_FIELD ASC",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .sortOrder(MyEntityFilterBuilder.SortOrder()
+                                .price.asc()
+                                .alcoholProductKindCode.desc()
+                                .enumField.asc()
+                        )
+                        .sortOrderValue
+        )
+    }
+
+    @Test
+    fun testLimitField() {
+        Assert.assertEquals(
+                " LIMIT 100",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .limit(100)
+                        .limitValue
+        )
+    }
+
+    internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEntityFilterBuilder.SortOrder, String>(Uri.parse("http://google.com")) {
 
         val uuid = addFieldFilter<String>("UUID")
         val parentUuid = addFieldFilter<String?>("PARENT_UUID")
@@ -46,7 +101,7 @@ class FilterBuilderTest {
         override val currentQuery: MyEntityFilterBuilder
             get() = this
 
-        internal inner class SortOrder : FilterBuilder.SortOrder<SortOrder>() {
+        class SortOrder : FilterBuilder.SortOrder<SortOrder>() {
 
             val uuid = addFieldSorter("UUID")
             val parentUuid = addFieldSorter("PARENT_UUID")
