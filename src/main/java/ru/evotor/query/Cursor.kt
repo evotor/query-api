@@ -14,6 +14,7 @@ abstract class Cursor<out T>(cursor: Cursor) : android.database.Cursor by cursor
             while (moveToNext()) {
                 result.add(getValue())
             }
+            close()
         }
         return result
     }

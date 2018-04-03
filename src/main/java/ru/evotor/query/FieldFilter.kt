@@ -21,11 +21,11 @@ abstract class FieldFilter<V, T, Q, S : FilterBuilder.SortOrder<S>, R>(
         return appendResult(appendOperator("!=", value))
     }
 
-    fun greater(value: V, including: Boolean): Executor<Q, S, R> {
+    fun greater(value: V, including: Boolean = false): Executor<Q, S, R> {
         return greaterLower(">", value, including)
     }
 
-    fun lower(value: V, including: Boolean): Executor<Q, S, R> {
+    fun lower(value: V, including: Boolean = false): Executor<Q, S, R> {
         return greaterLower("<", value, including)
     }
 
