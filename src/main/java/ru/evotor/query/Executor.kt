@@ -2,6 +2,7 @@ package ru.evotor.query
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 
 /**
  * Created by a.lunkov on 28.02.2018.
@@ -43,18 +44,19 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
     }
 
     fun sortOrder(sortOrder: S): Executor<Q, S, R> {
-        sortOrderValue = " " + sortOrder.value.toString().dropLast(1)
+        sortOrderValue = " ${sortOrder.value}".dropLast(1)
         return this
     }
 
     fun execute(context: Context): Cursor<R> {
         val sortOrderLimit = sortOrderValue + limitValue
+        Log.v("Executor", "Executing query: tableUri=$tableUri selection=${if (selection.isEmpty()) null else selection.toString()} sortOrderLimit=${if (sortOrderLimit.isEmpty()) null else sortOrderLimit.drop(1)}")
         return object : Cursor<R>(context.contentResolver.query(
                 tableUri,
                 null,
                 if (selection.isEmpty()) null else selection.toString(),
                 null,
-                if (sortOrderLimit.isEmpty()) null else sortOrderLimit
+                if (sortOrderLimit.isEmpty()) null else sortOrderLimit.drop(1)
         )) {
             override fun getValue(): R {
                 return this@Executor.getValue(this)

@@ -27,14 +27,14 @@ class FilterBuilderTest {
                         .and(MyEntityFilterBuilder()
                                 .alcoholProductKindCode.greater(10, true)
                                 .and().enumField.equal(MyEntityEnum.FIRST_VALUE)))
-                .and().price.lower(BigDecimal.valueOf(4), false)
+                .and().price.lower(BigDecimal.valueOf(4))
                 .sortOrder(MyEntityFilterBuilder.SortOrder()
                         .uuid.asc()
                         .enumField.desc()
                         .parentUuid.asc())
                 .limit(10)
         var myEntityQuery = myEntityExecutor.selection.toString()
-        myEntityQuery = myEntityQuery + myEntityExecutor.sortOrderValue + myEntityExecutor.limitValue
+        myEntityQuery += myEntityExecutor.sortOrderValue + myEntityExecutor.limitValue
         Assert.assertEquals(
                 "UUID=\"someUuid\" AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IN (100,200,null,300) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=100 AND ENUM_FIELD=\"FIRST_VALUE\")) AND PRICE_OUT<400 UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
                 myEntityQuery

@@ -1,5 +1,7 @@
 package ru.evotor.query
 
+import java.util.*
+
 /**
  * Created by a.lunkov on 27.02.2018.
  */
@@ -72,7 +74,7 @@ abstract class FieldFilter<V, T, Q, S : FilterBuilder.SortOrder<S>, R>(
 
     private fun appendOperator(operator: String, sourceValue: V): String {
         val targetValue: Any? = if (typeConverter == null) sourceValue else typeConverter.invoke(sourceValue)
-        return operator + if (targetValue is String || targetValue is Enum<*>) "\"$targetValue\"" else "$targetValue"
+        return operator + if (targetValue is String || targetValue is UUID || targetValue is Enum<*> || targetValue is Date) "\"$targetValue\"" else "$targetValue"
     }
 
     protected abstract fun appendResult(edition: String): Executor<Q, S, R>
