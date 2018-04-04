@@ -228,4 +228,87 @@ class InsideTest {
                 }
     }
 
+    @Test
+    fun testTypeConverterNullToEmptyStringUsualUsage() {
+        MyEntityFilterBuilder()
+                .notNullName.inside(arrayListOf("1", "2"))
+                .let {
+                    Assert.assertEquals("NAME_NOT_NULL IN (?,?)", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("1", "2"), it.selectionArgs)
+                    Assert.assertEquals("", it.limitValue)
+                    Assert.assertEquals("", it.sortOrderValue)
+                }
+    }
+
+    @Test
+    fun testTypeConverterNullToEmptyStringEmptyList() {
+        MyEntityFilterBuilder()
+                .notNullName.inside(arrayListOf())
+                .let {
+                    Assert.assertEquals("NAME_NOT_NULL IN ()", it.selection.toString())
+                    Assert.assertEquals(arrayListOf<String>(), it.selectionArgs)
+                    Assert.assertEquals("", it.limitValue)
+                    Assert.assertEquals("", it.sortOrderValue)
+                }
+    }
+
+    @Test
+    fun testTypeConverterNullToEmptyString1NullValue() {
+        MyEntityFilterBuilder()
+                .notNullName.inside(arrayListOf(null))
+                .let {
+                    Assert.assertEquals("NAME_NOT_NULL IN (?)", it.selection.toString())
+                    Assert.assertEquals(arrayListOf(""), it.selectionArgs)
+                    Assert.assertEquals("", it.limitValue)
+                    Assert.assertEquals("", it.sortOrderValue)
+                }
+    }
+
+    @Test
+    fun testTypeConverterNullToEmptyString2NullValues() {
+        MyEntityFilterBuilder()
+                .notNullName.inside(arrayListOf(null, null))
+                .let {
+                    Assert.assertEquals("NAME_NOT_NULL IN (?)", it.selection.toString())
+                    Assert.assertEquals(arrayListOf(""), it.selectionArgs)
+                    Assert.assertEquals("", it.limitValue)
+                    Assert.assertEquals("", it.sortOrderValue)
+                }
+    }
+
+    @Test
+    fun testTypeConverterNullToEmptyString2NullValuesAndString() {
+        MyEntityFilterBuilder()
+                .notNullName.inside(arrayListOf(null, "1", null))
+                .let {
+                    Assert.assertEquals("NAME_NOT_NULL IN (?, ?)", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("", "1"), it.selectionArgs)
+                    Assert.assertEquals("", it.limitValue)
+                    Assert.assertEquals("", it.sortOrderValue)
+                }
+    }
+
+    @Test
+    fun testTypeConverterNullToEmptyString1EmptyValue() {
+        MyEntityFilterBuilder()
+                .notNullName.inside(arrayListOf(""))
+                .let {
+                    Assert.assertEquals("NAME_NOT_NULL IN (?)", it.selection.toString())
+                    Assert.assertEquals(arrayListOf(""), it.selectionArgs)
+                    Assert.assertEquals("", it.limitValue)
+                    Assert.assertEquals("", it.sortOrderValue)
+                }
+    }
+
+    @Test
+    fun testTypeConverterNullToEmptyString1NullAnd1EmptyValues() {
+        MyEntityFilterBuilder()
+                .notNullName.inside(arrayListOf(null, ""))
+                .let {
+                    Assert.assertEquals("NAME_NOT_NULL IN (?)", it.selection.toString())
+                    Assert.assertEquals(arrayListOf(""), it.selectionArgs)
+                    Assert.assertEquals("", it.limitValue)
+                    Assert.assertEquals("", it.sortOrderValue)
+                }
+    }
 }

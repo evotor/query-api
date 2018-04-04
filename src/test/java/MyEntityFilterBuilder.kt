@@ -14,6 +14,10 @@ internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEn
         // Конвертируем пустую строку в null
         it?.takeIf { it.isNotBlank() }
     })
+    val notNullName = addFieldFilter<String?, String?>("NAME_NOT_NULL", {
+        // Конвертируем null в пустую строку
+        it ?: ""
+    })
 
     override val currentQuery: MyEntityFilterBuilder
         get() = this
