@@ -72,7 +72,7 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
         values.forEach {
             if (it != null) {
                 val arg = convertArg(it)
-                if(arg != "null") {
+                if (arg != "null") {
                     election += ",?"
                     args.add(arg)
                 } else {
@@ -86,7 +86,7 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
             election = election.drop(1)
         }
         if (valuesContainNull || argsContainNull) {
-            appendSelection(" IS ${if (not) "NOT " else ""}NULL AND ")
+            appendSelection(" IS ${if (not) "NOT " else ""}NULL ${if (not) "AND" else "OR"} ")
         }
         return appendSelection(
                 " ${if (not) "NOT " else ""}IN ($election)",
