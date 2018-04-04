@@ -7,10 +7,10 @@ abstract class Cursor<out T>(cursor: Cursor) : android.database.Cursor by cursor
 
     abstract fun getValue(): T
 
-    fun toList(): List<T>? {
-        var result: List<T>? = null
+    fun toList(): List<T> {
+        val result: MutableList<T> = ArrayList()
         if(moveToFirst()) {
-            result = ArrayList()
+            result.add(getValue())
             while (moveToNext()) {
                 result.add(getValue())
             }
