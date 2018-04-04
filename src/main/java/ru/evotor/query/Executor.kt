@@ -14,7 +14,7 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
     protected abstract val currentQuery: Q
 
     internal var selection = StringBuilder()
-    internal val selectionArgs = ArrayList<String>()
+    internal var selectionArgs = ArrayList<String>()
     internal var sortOrderValue = ""
         private set
     internal var limitValue = ""

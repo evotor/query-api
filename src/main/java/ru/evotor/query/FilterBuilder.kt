@@ -35,7 +35,6 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
 
     private fun <V, T> initFieldFilter(fieldName: String, typeConverter: ((V) -> T)?): FieldFilter<V, Q, S, R> {
         return object : FieldFilter<V, Q, S, R>() {
-
             override fun convertArg(source: V): String {
                 var result: Any? = if (typeConverter != null) typeConverter.invoke(source) else source
                 if (result is Boolean) {
@@ -51,12 +50,12 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
                 }
                 return executor
             }
-
         }
     }
 
     fun noFilters(): Executor<Q, S, R> {
         executor.selection = StringBuilder()
+        executor.selectionArgs = ArrayList()
         return executor
     }
 
