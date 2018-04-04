@@ -1,26 +1,23 @@
 package ru.evotor.query
 
-import java.util.*
-
 /**
  * Created by a.lunkov on 27.02.2018.
  */
 
-abstract class FieldFilter<V, T, Q, S : FilterBuilder.SortOrder<S>, R>(
-        private val typeConverter: ((V) -> T)?) {
+abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
 
     fun equal(value: V): Executor<Q, S, R> {
         if (value == null) {
-            return appendResult(" IS NULL")
+            return appendSelection(" IS NULL")
         }
-        return appendResult(appendOperator("=", value))
+        return appendSelection("=?", convertArg(value))
     }
 
     fun notEqual(value: V): Executor<Q, S, R> {
         if (value == null) {
-            return appendResult(" IS NOT NULL")
+            return appendSelection(" IS NOT NULL")
         }
-        return appendResult(appendOperator("!=", value))
+        return appendSelection("<>?", convertArg(value))
     }
 
     fun greater(value: V, including: Boolean = false): Executor<Q, S, R> {
@@ -32,21 +29,27 @@ abstract class FieldFilter<V, T, Q, S : FilterBuilder.SortOrder<S>, R>(
     }
 
     private fun greaterLower(operator: String, value: V, including: Boolean): Executor<Q, S, R> {
-        return appendResult(appendOperator(if (including) "$operator=" else operator, value))
+        return appendSelection(operator + if (including) "=?" else "?", convertArg(value))
     }
 
-    fun like(text: String): Executor<Q, S, R> {
-        return appendResult(" LIKE \"$text\"")
-    }
-
-    fun between(leftValue: V, rightValue: V): Executor<Q, S, R> {
-        return appendResult(
-                " ${appendOperator("BETWEEN ", leftValue)} ${appendOperator("AND ", rightValue)}"
+    fun like(text: String, useEscape: Boolean = false): Executor<Q, S, R> {
+        return appendSelection(
+                " LIKE ?${if (useEscape) " ESCAPE '\\'" else ""}",
+                if (useEscape)
+                    "%${text.replace("\\", "\\" + "\\")
+                            .replace("%", "\\" + "%")
+                            .replace("_", "\\" + "_")}%"
+                else
+                    text
         )
     }
 
+    fun between(leftValue: V, rightValue: V): Executor<Q, S, R> {
+        return appendSelection("BETWEEN ? AND ?", convertArg(leftValue), convertArg(rightValue))
+    }
+
     fun inside(values: List<V>): Executor<Q, S, R> {
-        return insideNotInside("IN", values)
+        return insideNotInside(false, values)
     }
 
     fun inside(values: Array<V>): Executor<Q, S, R> {
@@ -54,29 +57,39 @@ abstract class FieldFilter<V, T, Q, S : FilterBuilder.SortOrder<S>, R>(
     }
 
     fun notInside(values: List<V>): Executor<Q, S, R> {
-        return insideNotInside("NOT IN", values)
+        return insideNotInside(true, values)
     }
 
     fun notInside(values: Array<V>): Executor<Q, S, R> {
         return notInside(values.toList())
     }
 
-    private fun insideNotInside(operator: String, values: List<V>): Executor<Q, S, R> {
-        var result = ""
+    private fun insideNotInside(not: Boolean, values: List<V>): Executor<Q, S, R> {
+        var resultSelection = ""
+        val resultArgs = ArrayList<String>()
+        var containsNull = false
         values.forEach {
-            result = appendOperator("$result,", it)
+            if (it != null) {
+                resultSelection += ",?"
+                resultArgs.add(convertArg(it))
+            } else {
+                containsNull = true
+            }
         }
-        if (result.isNotEmpty()) {
-            result = result.drop(1)
+        if (resultSelection.isNotEmpty()) {
+            resultSelection = resultSelection.drop(1)
         }
-        return appendResult(" $operator ($result)")
+        if (containsNull) {
+            appendSelection(" IS ${if (not) "NOT " else ""}NULL OR ")
+        }
+        return appendSelection(
+                " ${if (not) "NOT " else ""}IN ($resultSelection)",
+                *resultArgs.toTypedArray()
+        )
     }
 
-    private fun appendOperator(operator: String, sourceValue: V): String {
-        val targetValue: Any? = if (typeConverter == null) sourceValue else typeConverter.invoke(sourceValue)
-        return operator + if (targetValue is String || targetValue is UUID || targetValue is Enum<*> || targetValue is Date) "\"$targetValue\"" else "$targetValue"
-    }
+    protected abstract fun convertArg(arg: V): String
 
-    protected abstract fun appendResult(edition: String): Executor<Q, S, R>
+    protected abstract fun appendSelection(selection: String, vararg args: String): Executor<Q, S, R>
 
 }

@@ -3,6 +3,7 @@ package ru.evotor.query
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import java.util.*
 
 /**
  * Created by a.lunkov on 28.02.2018.
@@ -13,6 +14,7 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
     protected abstract val currentQuery: Q
 
     internal var selection = StringBuilder()
+    internal val selectionArgs = ArrayList<String>()
     internal var sortOrderValue = ""
         private set
     internal var limitValue = ""
@@ -20,11 +22,13 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
 
     fun and(intersection: Executor<Q, S, R>): Executor<Q, S, R> {
         selection.append(" AND (").append(intersection.selection).append(")")
+        selectionArgs.addAll(intersection.selectionArgs)
         return this
     }
 
     fun or(union: Executor<Q, S, R>): Executor<Q, S, R> {
         selection.append(" OR (").append(union.selection).append(")")
+        selectionArgs.addAll(union.selectionArgs)
         return this
     }
 
@@ -50,12 +54,12 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
 
     fun execute(context: Context): Cursor<R> {
         val sortOrderLimit = sortOrderValue + limitValue
-        Log.v("Executor", "Executing query: tableUri=$tableUri selection=${if (selection.isEmpty()) null else selection.toString()} sortOrderLimit=${if (sortOrderLimit.isEmpty()) null else sortOrderLimit.drop(1)}")
+        Log.v("Executor", "Executing query: tableUri=$tableUri selection=${if (selection.isEmpty()) null else selection.toString()} selectionArgs=${Arrays.toString(selectionArgs.toTypedArray())} sortOrderLimit=${if (sortOrderLimit.isEmpty()) null else sortOrderLimit.drop(1)}")
         return object : Cursor<R>(context.contentResolver.query(
                 tableUri,
                 null,
                 if (selection.isEmpty()) null else selection.toString(),
-                null,
+                if (selectionArgs.isEmpty()) null else selectionArgs.toTypedArray(),
                 if (sortOrderLimit.isEmpty()) null else sortOrderLimit.drop(1)
         )) {
             override fun getValue(): R {

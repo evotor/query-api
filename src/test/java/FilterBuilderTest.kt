@@ -5,9 +5,9 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import ru.evotor.query.Cursor
-import ru.evotor.query.Executor
 import ru.evotor.query.FilterBuilder
 import java.math.BigDecimal
+import java.util.*
 
 /**
  * Created by a.lunkov on 06.03.2018.
@@ -19,7 +19,7 @@ class FilterBuilderTest {
     fun testMyEntityFilterBuilder() {
         val insideNumbers: Array<BigDecimal?> = arrayOf(BigDecimal(1), BigDecimal(2), null, BigDecimal(3))
         val myEntityExecutor = MyEntityFilterBuilder()
-                .uuid.equal("someUuid")
+                .uuid.like("%Молоко_40%%", true)
                 .and().alcoholProductKindCode.equal(null)
                 .or(MyEntityFilterBuilder()
                         .price.inside(insideNumbers)
@@ -35,8 +35,10 @@ class FilterBuilderTest {
                 .limit(10)
         var myEntityQuery = myEntityExecutor.selection.toString()
         myEntityQuery += myEntityExecutor.sortOrderValue + myEntityExecutor.limitValue
+        println(myEntityQuery)
+        println(Arrays.toString(myEntityExecutor.selectionArgs.toTypedArray()))
         Assert.assertEquals(
-                "UUID=\"someUuid\" AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IN (100,200,null,300) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=100 AND ENUM_FIELD=\"FIRST_VALUE\")) AND PRICE_OUT<400 UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
+                "UUID LIKE ? ESCAPE '\\' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<? UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
                 myEntityQuery
         )
     }

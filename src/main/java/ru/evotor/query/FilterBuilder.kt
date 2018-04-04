@@ -25,20 +25,33 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
         }
     }
 
-    fun <V> addFieldFilter(fieldName: String): FieldFilter<V, V, Q, S, R> {
-        return createFieldFilter(fieldName, null)
+    fun <V> addFieldFilter(fieldName: String): FieldFilter<V, Q, S, R> {
+        return initFieldFilter<V, V>(fieldName, null)
     }
 
-    fun <V, T> addFieldFilter(fieldName: String, typeConverter: (V) -> T): FieldFilter<V, T, Q, S, R> {
-        return createFieldFilter(fieldName, typeConverter)
+    fun <V, T> addFieldFilter(fieldName: String, typeConverter: (V) -> T): FieldFilter<V, Q, S, R> {
+        return initFieldFilter(fieldName, typeConverter)
     }
 
-    private fun <V, T> createFieldFilter(fieldName: String, typeConverter: ((V) -> T)?): FieldFilter<V, T, Q, S, R> {
-        return object : FieldFilter<V, T, Q, S, R>(typeConverter) {
-            override fun appendResult(edition: String): Executor<Q, S, R> {
-                executor.selection.append(fieldName + edition)
+    private fun <V, T> initFieldFilter(fieldName: String, typeConverter: ((V) -> T)?): FieldFilter<V, Q, S, R> {
+        return object : FieldFilter<V, Q, S, R>() {
+
+            override fun convertArg(arg: V): String {
+                var resultArg: Any? = if (typeConverter != null) typeConverter.invoke(arg) else arg
+                if (resultArg is Boolean) {
+                    resultArg = if (resultArg) "1" else "0"
+                }
+                return resultArg.toString()
+            }
+
+            override fun appendSelection(selection: String, vararg args: String): Executor<Q, S, R> {
+                executor.selection.append(fieldName + selection)
+                args.forEach {
+                    executor.selectionArgs.add(it)
+                }
                 return executor
             }
+
         }
     }
 
