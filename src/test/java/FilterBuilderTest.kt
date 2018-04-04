@@ -41,16 +41,6 @@ class FilterBuilderTest {
     }
 
     @Test
-    fun testBetween() {
-        Assert.assertEquals(
-                "UUID BETWEEN \"1\" AND \"100\")",
-                MyEntityFilterBuilder()
-                        .uuid.between("1", "100")
-                        .selection.toString()
-        )
-    }
-
-    @Test
     fun testGreater() {
         Assert.assertEquals(
                 "UUID>\"5 AND TEST = 6\\\"\\\"\"",

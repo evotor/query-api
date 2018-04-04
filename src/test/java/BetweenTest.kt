@@ -7,15 +7,15 @@ import java.math.BigDecimal
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
-class NotEqualTest {
+class BetweenTest {
 
     @Test
     fun testUsualUsage() {
         MyEntityFilterBuilder()
-                .uuid.notEqual("some_uuid")
+                .uuid.between("1", "2")
                 .let {
-                    Assert.assertEquals("UUID<>?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf("some_uuid"), it.selectionArgs)
+                    Assert.assertEquals("UUID BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("1", "2"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -24,34 +24,34 @@ class NotEqualTest {
     @Test
     fun testSpecialSymbols() {
         MyEntityFilterBuilder()
-                .uuid.notEqual("( % \\ LIKE _ \" ' * NULL")
+                .uuid.between("( % \\ LIKE _ \" ' * NULL", "5")
                 .let {
-                    Assert.assertEquals("UUID<>?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf("( % \\ LIKE _ \" ' * NULL"), it.selectionArgs)
+                    Assert.assertEquals("UUID BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("( % \\ LIKE _ \" ' * NULL", "5"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
     }
 
     @Test
-    fun testEmptyValue() {
+    fun testEmptyValues() {
         MyEntityFilterBuilder()
-                .uuid.notEqual("")
+                .uuid.between("", "")
                 .let {
-                    Assert.assertEquals("UUID<>?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf<String>(""), it.selectionArgs)
+                    Assert.assertEquals("UUID BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf<String>("", ""), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
     }
 
     @Test
-    fun test1NullValue() {
+    fun testNullValue() {
         MyEntityFilterBuilder()
-                .uuid.notEqual(null)
+                .uuid.between(null, "49")
                 .let {
-                    Assert.assertEquals("UUID IS NOT NULL", it.selection.toString())
-                    Assert.assertEquals(arrayListOf<String>(), it.selectionArgs)
+                    Assert.assertEquals("UUID BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf<String?>(null, "49"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -60,10 +60,10 @@ class NotEqualTest {
     @Test
     fun testTypeConverterUsualUsage() {
         MyEntityFilterBuilder()
-                .price.notEqual(BigDecimal(2))
+                .price.between(BigDecimal(2), BigDecimal.TEN)
                 .let {
-                    Assert.assertEquals("PRICE_OUT<>?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf("200"), it.selectionArgs)
+                    Assert.assertEquals("PRICE_OUT BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("200", "1000"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -72,10 +72,10 @@ class NotEqualTest {
     @Test
     fun testTypeConverterNullValue() {
         MyEntityFilterBuilder()
-                .price.notEqual(null)
+                .price.between(null, BigDecimal.TEN)
                 .let {
-                    Assert.assertEquals("PRICE_OUT IS NOT NULL", it.selection.toString())
-                    Assert.assertEquals(arrayListOf<String>(), it.selectionArgs)
+                    Assert.assertEquals("PRICE_OUT BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf<String?>(null, "1000"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -84,10 +84,10 @@ class NotEqualTest {
     @Test
     fun testTypeConverterEmptyStringToNullUsualUsage() {
         MyEntityFilterBuilder()
-                .name.notEqual("1")
+                .name.between("1", "3")
                 .let {
-                    Assert.assertEquals("NAME<>?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf("1"), it.selectionArgs)
+                    Assert.assertEquals("NAME BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("1", "3"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -96,10 +96,10 @@ class NotEqualTest {
     @Test
     fun testTypeConverterEmptyStringToNull_NullValue() {
         MyEntityFilterBuilder()
-                .name.notEqual(null)
+                .name.between(null, "3")
                 .let {
-                    Assert.assertEquals("NAME IS NOT NULL", it.selection.toString())
-                    Assert.assertEquals(arrayListOf<String>(), it.selectionArgs)
+                    Assert.assertEquals("NAME BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf<String?>(null, "3"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -108,10 +108,10 @@ class NotEqualTest {
     @Test
     fun testTypeConverterEmptyStringToNullEmptyValue() {
         MyEntityFilterBuilder()
-                .name.notEqual("")
+                .name.between("", "")
                 .let {
-                    Assert.assertEquals("NAME IS NOT NULL", it.selection.toString())
-                    Assert.assertEquals(arrayListOf<String>(), it.selectionArgs)
+                    Assert.assertEquals("NAME BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf<String>("", ""), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -120,10 +120,10 @@ class NotEqualTest {
     @Test
     fun testTypeConverterNullToEmptyStringUsualUsage() {
         MyEntityFilterBuilder()
-                .notNullName.notEqual("1")
+                .notNullName.between("1", "3")
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL<>?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf("1"), it.selectionArgs)
+                    Assert.assertEquals("NAME_NOT_NULL BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("1", "3"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -132,10 +132,10 @@ class NotEqualTest {
     @Test
     fun testTypeConverterNullToEmptyString1NullValue() {
         MyEntityFilterBuilder()
-                .notNullName.notEqual(null)
+                .notNullName.between(null, "42")
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL<>?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf(""), it.selectionArgs)
+                    Assert.assertEquals("NAME_NOT_NULL BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("", "42"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }
@@ -144,10 +144,10 @@ class NotEqualTest {
     @Test
     fun testTypeConverterNullToEmptyString1EmptyValue() {
         MyEntityFilterBuilder()
-                .notNullName.notEqual("")
+                .notNullName.between("", "3")
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL<>?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf(""), it.selectionArgs)
+                    Assert.assertEquals("NAME_NOT_NULL BETWEEN ? AND ?", it.selection.toString())
+                    Assert.assertEquals(arrayListOf("", "3"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }

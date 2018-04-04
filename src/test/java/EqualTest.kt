@@ -34,7 +34,7 @@ class EqualTest {
     }
 
     @Test
-    fun testEmptyList() {
+    fun testEmptyValue() {
         MyEntityFilterBuilder()
                 .uuid.equal("")
                 .let {
