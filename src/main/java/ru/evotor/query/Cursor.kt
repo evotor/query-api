@@ -13,12 +13,13 @@ abstract class Cursor<out T>(cursor: Cursor) : android.database.Cursor by cursor
 
     fun toList(): List<T> {
         val result: MutableList<T> = ArrayList()
-        if (moveToFirst()) {
-            result.add(getValue())
-            while (moveToNext()) {
+        use {
+            if (moveToFirst()) {
                 result.add(getValue())
+                while (moveToNext()) {
+                    result.add(getValue())
+                }
             }
-            close()
         }
         return result
     }
