@@ -6,17 +6,17 @@ import android.net.Uri
  * Created by a.lunkov on 27.02.2018.
  */
 
-abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, T>(tableUri: Uri) {
+abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri) {
 
     protected abstract val currentQuery: Q
 
-    protected abstract fun getValue(cursor: Cursor<T>): T
+    protected abstract fun getValue(cursor: Cursor<R>): R
 
-    private val executor: Executor<Q, S, T>
+    private val executor: Executor<Q, S, R>
 
     init {
-        executor = object : Executor<Q, S, T>(tableUri) {
-            override fun getValue(cursor: Cursor<T>): T {
+        executor = object : Executor<Q, S, R>(tableUri) {
+            override fun getValue(cursor: Cursor<R>): R {
                 return this@FilterBuilder.getValue(cursor)
             }
 
@@ -25,16 +25,37 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, T>(tableUri: Uri
         }
     }
 
-    fun <V> addFieldFilter(fieldName: String): FieldFilter<V, Q, S, T> {
-        return object : FieldFilter<V, Q, S, T>() {
-            override fun appendResult(edition: String): Executor<Q, S, T> {
-                executor.selection.append(fieldName + edition)
+    fun <V> addFieldFilter(fieldName: String): FieldFilter<V, Q, S, R> {
+        return initFieldFilter<V, V>(fieldName, null)
+    }
+
+    fun <V, T> addFieldFilter(fieldName: String, typeConverter: (V) -> T): FieldFilter<V, Q, S, R> {
+        return initFieldFilter(fieldName, typeConverter)
+    }
+
+    private fun <V, T> initFieldFilter(fieldName: String, typeConverter: ((V) -> T)?): FieldFilter<V, Q, S, R> {
+        return object : FieldFilter<V, Q, S, R>() {
+
+            override fun convertArg(arg: V): String {
+                var resultArg: Any? = if (typeConverter != null) typeConverter.invoke(arg) else arg
+                if (resultArg is Boolean) {
+                    resultArg = if (resultArg) "1" else "0"
+                }
+                return resultArg.toString()
+            }
+
+            override fun appendSelection(selection: String, vararg args: String): Executor<Q, S, R> {
+                executor.selection.append(fieldName + selection)
+                args.forEach {
+                    executor.selectionArgs.add(it)
+                }
                 return executor
             }
+
         }
     }
 
-    fun noFilters(): Executor<Q, S, T> {
+    fun noFilters(): Executor<Q, S, R> {
         executor.selection = StringBuilder()
         return executor
     }

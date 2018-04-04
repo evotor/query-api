@@ -4,76 +4,92 @@ package ru.evotor.query
  * Created by a.lunkov on 27.02.2018.
  */
 
-abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, T> {
+abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
 
-    fun equal(value: V?): Executor<Q, S, T> {
+    fun equal(value: V): Executor<Q, S, R> {
         if (value == null) {
-            return appendResult(" IS NULL")
+            return appendSelection(" IS NULL")
         }
-        return equalNotEqual("=", value)
+        return appendSelection("=?", convertArg(value))
     }
 
-    fun notEqual(value: V?): Executor<Q, S, T> {
+    fun notEqual(value: V): Executor<Q, S, R> {
         if (value == null) {
-            return appendResult(" IS NOT NULL")
+            return appendSelection(" IS NOT NULL")
         }
-        return equalNotEqual("!=", value)
+        return appendSelection("<>?", convertArg(value))
     }
 
-    private fun equalNotEqual(operator: String, value: V): Executor<Q, S, T> {
-        return appendResult(operator + if(value is String || value is Enum<*>) "\"$value\"" else "$value")
+    fun greater(value: V, including: Boolean = false): Executor<Q, S, R> {
+        return greaterLower(">", value, including)
     }
 
-    fun greater(value: V, including: Boolean): Executor<Q, S, T> {
-        return greaterLower('>', value, including)
+    fun lower(value: V, including: Boolean = false): Executor<Q, S, R> {
+        return greaterLower("<", value, including)
     }
 
-    fun lower(value: V, including: Boolean): Executor<Q, S, T> {
-        return greaterLower('<', value, including)
+    private fun greaterLower(operator: String, value: V, including: Boolean): Executor<Q, S, R> {
+        return appendSelection(operator + if (including) "=?" else "?", convertArg(value))
     }
 
-    private fun greaterLower(operator: Char, value: V, including: Boolean): Executor<Q, S, T> {
-        var result = operator.toString()
-        if (including) {
-            result += "="
-        }
-        result += value
-        return appendResult(result)
+    fun like(text: String, useEscape: Boolean = false): Executor<Q, S, R> {
+        return appendSelection(
+                " LIKE ?${if (useEscape) " ESCAPE '\\'" else ""}",
+                if (useEscape)
+                    "%${text.replace("\\", "\\" + "\\")
+                            .replace("%", "\\" + "%")
+                            .replace("_", "\\" + "_")}%"
+                else
+                    text
+        )
     }
 
-    fun like(text: String): Executor<Q, S, T> {
-        return appendResult(" LIKE \"$text\"")
+    fun between(leftValue: V, rightValue: V): Executor<Q, S, R> {
+        return appendSelection("BETWEEN ? AND ?", convertArg(leftValue), convertArg(rightValue))
     }
 
-    fun between(leftValue: V, rightValue: V): Executor<Q, S, T> {
-        return appendResult(" BETWEEN $leftValue AND $rightValue")
+    fun inside(values: List<V>): Executor<Q, S, R> {
+        return insideNotInside(false, values)
     }
 
-    fun inside(values: List<V>): Executor<Q, S, T> {
-        return insideNotInside("IN", values)
-    }
-
-    fun inside(values: Array<V>): Executor<Q, S, T> {
+    fun inside(values: Array<V>): Executor<Q, S, R> {
         return inside(values.toList())
     }
 
-    fun notInside(values: List<V>): Executor<Q, S, T> {
-        return insideNotInside("NOT IN", values)
+    fun notInside(values: List<V>): Executor<Q, S, R> {
+        return insideNotInside(true, values)
     }
 
-    fun notInside(values: Array<V>): Executor<Q, S, T> {
+    fun notInside(values: Array<V>): Executor<Q, S, R> {
         return notInside(values.toList())
     }
 
-    private fun insideNotInside(operator: String, values: List<V>): Executor<Q, S, T> {
-        val result = StringBuilder()
+    private fun insideNotInside(not: Boolean, values: List<V>): Executor<Q, S, R> {
+        var resultSelection = ""
+        val resultArgs = ArrayList<String>()
+        var containsNull = false
         values.forEach {
-            result.append(if(it is String || it is Enum<*>) "\"$it\"," else "$it,")
+            if (it != null) {
+                resultSelection += ",?"
+                resultArgs.add(convertArg(it))
+            } else {
+                containsNull = true
+            }
         }
-        result.setCharAt(result.length - 1, ')')
-        return appendResult(" $operator ($result")
+        if (resultSelection.isNotEmpty()) {
+            resultSelection = resultSelection.drop(1)
+        }
+        if (containsNull) {
+            appendSelection(" IS ${if (not) "NOT " else ""}NULL OR ")
+        }
+        return appendSelection(
+                " ${if (not) "NOT " else ""}IN ($resultSelection)",
+                *resultArgs.toTypedArray()
+        )
     }
 
-    protected abstract fun appendResult(edition: String): Executor<Q, S, T>
+    protected abstract fun convertArg(arg: V): String
+
+    protected abstract fun appendSelection(selection: String, vararg args: String): Executor<Q, S, R>
 
 }
