@@ -65,30 +65,36 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
     }
 
     private fun insideNotInside(not: Boolean, values: List<V>): Executor<Q, S, R> {
-        var resultSelection = ""
-        val resultArgs = ArrayList<String>()
-        var containsNull = false
+        var election = ""
+        val args = ArrayList<String>()
+        var valuesContainNull = false
+        var argsContainNull = false
         values.forEach {
             if (it != null) {
-                resultSelection += ",?"
-                resultArgs.add(convertArg(it))
+                val arg = convertArg(it)
+                if(arg != "null") {
+                    election += ",?"
+                    args.add(arg)
+                } else {
+                    argsContainNull = true
+                }
             } else {
-                containsNull = true
+                valuesContainNull = true
             }
         }
-        if (resultSelection.isNotEmpty()) {
-            resultSelection = resultSelection.drop(1)
+        if (election.isNotEmpty()) {
+            election = election.drop(1)
         }
-        if (containsNull) {
-            appendSelection(" IS ${if (not) "NOT " else ""}NULL OR ")
+        if (valuesContainNull || argsContainNull) {
+            appendSelection(" IS ${if (not) "NOT " else ""}NULL AND ")
         }
         return appendSelection(
-                " ${if (not) "NOT " else ""}IN ($resultSelection)",
-                *resultArgs.toTypedArray()
+                " ${if (not) "NOT " else ""}IN ($election)",
+                *args.toTypedArray()
         )
     }
 
-    protected abstract fun convertArg(arg: V): String
+    protected abstract fun convertArg(source: V): String
 
     protected abstract fun appendSelection(selection: String, vararg args: String): Executor<Q, S, R>
 
