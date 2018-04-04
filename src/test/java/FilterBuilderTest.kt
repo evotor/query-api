@@ -41,50 +41,6 @@ class FilterBuilderTest {
     }
 
     @Test
-    fun testBetween() {
-        Assert.assertEquals(
-                "UUID BETWEEN \"1\" AND \"100\")",
-                MyEntityFilterBuilder()
-                        .uuid.between("1", "100")
-                        .selection.toString()
-        )
-    }
-
-    @Test
-    fun testGreater() {
-        Assert.assertEquals(
-                "UUID>\"5 AND TEST = 6\\\"\\\"\"",
-                MyEntityFilterBuilder()
-                        .uuid.greater("5 AND TEST = 6\"\"", false)
-                        .selection.toString()
-        )
-
-        Assert.assertEquals(
-                "UUID>=\"1\")",
-                MyEntityFilterBuilder()
-                        .uuid.greater("1", true)
-                        .selection.toString()
-        )
-    }
-
-    @Test
-    fun testLower() {
-        Assert.assertEquals(
-                "UUID<\"5 AND TEST = 6\\\"\\\"\"",
-                MyEntityFilterBuilder()
-                        .uuid.lower("5 AND TEST = 6\"\"", false)
-                        .selection.toString()
-        )
-
-        Assert.assertEquals(
-                "UUID<=\"1\")",
-                MyEntityFilterBuilder()
-                        .uuid.lower("1", true)
-                        .selection.toString()
-        )
-    }
-
-    @Test
     fun testLike() {
         Assert.assertEquals(
                 "UUID LIKE \"2%\"",
