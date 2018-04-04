@@ -41,23 +41,6 @@ class FilterBuilderTest {
     }
 
     @Test
-    fun testGreater() {
-        Assert.assertEquals(
-                "UUID>\"5 AND TEST = 6\\\"\\\"\"",
-                MyEntityFilterBuilder()
-                        .uuid.greater("5 AND TEST = 6\"\"", false)
-                        .selection.toString()
-        )
-
-        Assert.assertEquals(
-                "UUID>=\"1\")",
-                MyEntityFilterBuilder()
-                        .uuid.greater("1", true)
-                        .selection.toString()
-        )
-    }
-
-    @Test
     fun testLower() {
         Assert.assertEquals(
                 "UUID<\"5 AND TEST = 6\\\"\\\"\"",
