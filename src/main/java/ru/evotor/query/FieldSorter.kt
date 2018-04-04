@@ -6,13 +6,13 @@ package ru.evotor.query
 abstract class FieldSorter<S : FilterBuilder.SortOrder<S>> {
 
     fun asc(): S {
-        return appendResult(" ASC,")
+        return append(" ASC,")
     }
 
     fun desc(): S {
-        return appendResult(" DESC,")
+        return append(" DESC,")
     }
 
-    internal abstract fun appendResult(edition: String): S
+    internal abstract fun append(edition: String): S
 
 }

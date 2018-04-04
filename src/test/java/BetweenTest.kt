@@ -111,7 +111,7 @@ class BetweenTest {
                 .name.between("", "")
                 .let {
                     Assert.assertEquals("NAME BETWEEN ? AND ?", it.selection.toString())
-                    Assert.assertEquals(arrayListOf<String>("", ""), it.selectionArgs)
+                    Assert.assertEquals(arrayListOf<String?>(null, null), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
                 }

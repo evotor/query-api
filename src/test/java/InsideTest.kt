@@ -281,7 +281,7 @@ class InsideTest {
         MyEntityFilterBuilder()
                 .notNullName.inside(arrayListOf(null, "1", null))
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL IN (?, ?)", it.selection.toString())
+                    Assert.assertEquals("NAME_NOT_NULL IN (?,?)", it.selection.toString())
                     Assert.assertEquals(arrayListOf("", "1"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)

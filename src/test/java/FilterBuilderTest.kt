@@ -35,7 +35,7 @@ class FilterBuilderTest {
         println(myEntityQuery)
         println(Arrays.toString(myEntityExecutor.selectionArgs.toTypedArray()))
         Assert.assertEquals(
-                "UUID LIKE ? ESCAPE '\\' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<? UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
+                "UUID LIKE ? ESCAPE '\\' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<?UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
                 myEntityQuery
         )
     }
@@ -43,7 +43,7 @@ class FilterBuilderTest {
     @Test
     fun testLike() {
         Assert.assertEquals(
-                "UUID LIKE \"2%\"",
+                "UUID LIKE ?",
                 MyEntityFilterBuilder()
                         .uuid.like("2%")
                         .selection.toString()
@@ -72,7 +72,7 @@ class FilterBuilderTest {
     @Test
     fun testSortOrderByManyField() {
         Assert.assertEquals(
-                "PRICE_OUT ASC, ALCOHOL_PRODUCT_KIND_CODE DESC",
+                "PRICE_OUT ASC,ALCOHOL_PRODUCT_KIND_CODE DESC",
                 MyEntityFilterBuilder()
                         .uuid.equal("someUuid")
                         .sortOrder(MyEntityFilterBuilder.SortOrder()
@@ -82,7 +82,7 @@ class FilterBuilderTest {
         )
 
         Assert.assertEquals(
-                "PRICE_OUT ASC, ALCOHOL_PRODUCT_KIND_CODE DESC, ENUM_FIELD ASC",
+                "PRICE_OUT ASC,ALCOHOL_PRODUCT_KIND_CODE DESC,ENUM_FIELD ASC",
                 MyEntityFilterBuilder()
                         .uuid.equal("someUuid")
                         .sortOrder(MyEntityFilterBuilder.SortOrder()

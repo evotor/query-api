@@ -35,15 +35,15 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
 
     private fun <V, T> initFieldFilter(fieldName: String, typeConverter: ((V) -> T)?): FieldFilter<V, Q, S, R> {
         return object : FieldFilter<V, Q, S, R>() {
-            override fun convertArg(source: V): String {
+            override fun convertArg(source: V): String? {
                 var result: Any? = if (typeConverter != null) typeConverter.invoke(source) else source
                 if (result is Boolean) {
                     result = if (result) "1" else "0"
                 }
-                return result.toString()
+                return result?.toString()
             }
 
-            override fun appendSelection(selection: String, vararg args: String): Executor<Q, S, R> {
+            override fun appendSelection(selection: String, vararg args: String?): Executor<Q, S, R> {
                 executor.selection.append(fieldName + selection)
                 args.forEach {
                     executor.selectionArgs.add(it)
@@ -67,7 +67,7 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
 
         fun addFieldSorter(fieldName: String): FieldSorter<S> {
             return object : FieldSorter<S>() {
-                override fun appendResult(edition: String): S {
+                override fun append(edition: String): S {
                     value.append(fieldName + edition)
                     return currentSortOrder
                 }

@@ -234,7 +234,7 @@ class NotInsideTest {
         MyEntityFilterBuilder()
                 .notNullName.inside(arrayListOf("1", "2"))
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL NOT IN (?,?)", it.selection.toString())
+                    Assert.assertEquals("NAME_NOT_NULL IN (?,?)", it.selection.toString())
                     Assert.assertEquals(arrayListOf("1", "2"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
@@ -244,7 +244,7 @@ class NotInsideTest {
     @Test
     fun testTypeConverterNullToEmptyStringEmptyList() {
         MyEntityFilterBuilder()
-                .notNullName.inside(arrayListOf())
+                .notNullName.notInside(arrayListOf())
                 .let {
                     Assert.assertEquals("NAME_NOT_NULL NOT IN ()", it.selection.toString())
                     Assert.assertEquals(arrayListOf<String>(), it.selectionArgs)
@@ -258,7 +258,7 @@ class NotInsideTest {
         MyEntityFilterBuilder()
                 .notNullName.inside(arrayListOf(null))
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL NOT IN (?)", it.selection.toString())
+                    Assert.assertEquals("NAME_NOT_NULL IN (?)", it.selection.toString())
                     Assert.assertEquals(arrayListOf(""), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
@@ -270,7 +270,7 @@ class NotInsideTest {
         MyEntityFilterBuilder()
                 .notNullName.inside(arrayListOf(null, null))
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL NOT IN (?)", it.selection.toString())
+                    Assert.assertEquals("NAME_NOT_NULL IN (?)", it.selection.toString())
                     Assert.assertEquals(arrayListOf(""), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
@@ -282,7 +282,7 @@ class NotInsideTest {
         MyEntityFilterBuilder()
                 .notNullName.inside(arrayListOf(null, "1", null))
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL NOT IN (?, ?)", it.selection.toString())
+                    Assert.assertEquals("NAME_NOT_NULL IN (?,?)", it.selection.toString())
                     Assert.assertEquals(arrayListOf("", "1"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
@@ -294,7 +294,7 @@ class NotInsideTest {
         MyEntityFilterBuilder()
                 .notNullName.inside(arrayListOf(""))
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL NOT IN (?)", it.selection.toString())
+                    Assert.assertEquals("NAME_NOT_NULL IN (?)", it.selection.toString())
                     Assert.assertEquals(arrayListOf(""), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
@@ -306,7 +306,7 @@ class NotInsideTest {
         MyEntityFilterBuilder()
                 .notNullName.inside(arrayListOf(null, ""))
                 .let {
-                    Assert.assertEquals("NAME_NOT_NULL NOT IN (?)", it.selection.toString())
+                    Assert.assertEquals("NAME_NOT_NULL IN (?)", it.selection.toString())
                     Assert.assertEquals(arrayListOf(""), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
