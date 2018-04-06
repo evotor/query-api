@@ -7,17 +7,13 @@ package ru.evotor.query
 abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
 
     fun equal(value: V): Executor<Q, S, R> {
-        if (value == null) {
-            return appendSelection(" IS NULL")
-        }
-        return appendSelection("=?", convertArg(value))
+        val result = convertArg(value) ?: return appendSelection(" IS NULL")
+        return appendSelection("=?", result)
     }
 
     fun notEqual(value: V): Executor<Q, S, R> {
-        if (value == null) {
-            return appendSelection(" IS NOT NULL")
-        }
-        return appendSelection("<>?", convertArg(value))
+        val result = convertArg(value) ?: return appendSelection(" IS NOT NULL")
+        return appendSelection("<>?", result)
     }
 
     fun greater(value: V, including: Boolean = false): Executor<Q, S, R> {
@@ -45,7 +41,11 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
     }
 
     fun between(leftValue: V, rightValue: V): Executor<Q, S, R> {
-        return appendSelection("BETWEEN ? AND ?", convertArg(leftValue), convertArg(rightValue))
+        return appendSelection(" BETWEEN ? AND ?", convertArg(leftValue), convertArg(rightValue))
+    }
+
+    fun notBetween(leftValue: V, rightValue: V): Executor<Q, S, R> {
+        return appendSelection(" NOT BETWEEN ? AND ?", convertArg(leftValue), convertArg(rightValue))
     }
 
     fun inside(values: List<V>): Executor<Q, S, R> {
@@ -65,31 +65,34 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
     }
 
     private fun insideNotInside(not: Boolean, values: List<V>): Executor<Q, S, R> {
-        var resultSelection = ""
-        val resultArgs = ArrayList<String>()
-        var containsNull = false
+        var selection = ""
+        val args = ArrayList<String>()
+        var argsContainNull = false
         values.forEach {
-            if (it != null) {
-                resultSelection += ",?"
-                resultArgs.add(convertArg(it))
+            val arg = convertArg(it)
+            if (arg != null) {
+                if(!args.contains(arg)) {
+                    selection += ",?"
+                    args.add(arg)
+                }
             } else {
-                containsNull = true
+                argsContainNull = true
             }
         }
-        if (resultSelection.isNotEmpty()) {
-            resultSelection = resultSelection.drop(1)
+        if (selection.isNotEmpty()) {
+            selection = selection.drop(1)
         }
-        if (containsNull) {
-            appendSelection(" IS ${if (not) "NOT " else ""}NULL OR ")
+        if (argsContainNull) {
+            appendSelection(" IS ${if (not) "NOT " else ""}NULL ${if (not) "AND" else "OR"} ")
         }
         return appendSelection(
-                " ${if (not) "NOT " else ""}IN ($resultSelection)",
-                *resultArgs.toTypedArray()
+                " ${if (not) "NOT " else ""}IN ($selection)",
+                *args.toTypedArray()
         )
     }
 
-    protected abstract fun convertArg(arg: V): String
+    protected abstract fun convertArg(source: V): String?
 
-    protected abstract fun appendSelection(selection: String, vararg args: String): Executor<Q, S, R>
+    protected abstract fun appendSelection(selection: String, vararg args: String?): Executor<Q, S, R>
 
 }

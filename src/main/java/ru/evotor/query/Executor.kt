@@ -14,7 +14,7 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
     protected abstract val currentQuery: Q
 
     internal var selection = StringBuilder()
-    internal val selectionArgs = ArrayList<String>()
+    internal var selectionArgs = ArrayList<String?>()
     internal var sortOrderValue = ""
         private set
     internal var limitValue = ""
@@ -48,19 +48,19 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
     }
 
     fun sortOrder(sortOrder: S): Executor<Q, S, R> {
-        sortOrderValue = " ${sortOrder.value}".dropLast(1)
+        sortOrderValue = sortOrder.value.toString().dropLast(1)
         return this
     }
 
     fun execute(context: Context): Cursor<R> {
         val sortOrderLimit = sortOrderValue + limitValue
-        Log.v("Executor", "Executing query: tableUri=$tableUri selection=${if (selection.isEmpty()) null else selection.toString()} selectionArgs=${Arrays.toString(selectionArgs.toTypedArray())} sortOrderLimit=${if (sortOrderLimit.isEmpty()) null else sortOrderLimit.drop(1)}")
+        Log.v("Executor", "Executing query: tableUri=$tableUri selection=${if (selection.isEmpty()) null else selection.toString()} selectionArgs=${Arrays.toString(selectionArgs.toTypedArray())} sortOrderLimit=${if (sortOrderLimit.isEmpty()) null else sortOrderLimit}")
         return object : Cursor<R>(context.contentResolver.query(
                 tableUri,
                 null,
                 if (selection.isEmpty()) null else selection.toString(),
                 if (selectionArgs.isEmpty()) null else selectionArgs.toTypedArray(),
-                if (sortOrderLimit.isEmpty()) null else sortOrderLimit.drop(1)
+                if (sortOrderLimit.isEmpty()) null else sortOrderLimit
         )) {
             override fun getValue(): R {
                 return this@Executor.getValue(this)

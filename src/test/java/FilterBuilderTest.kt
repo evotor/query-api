@@ -1,11 +1,8 @@
-import android.net.Uri
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import ru.evotor.query.Cursor
-import ru.evotor.query.FilterBuilder
 import java.math.BigDecimal
 import java.util.*
 
@@ -38,38 +35,74 @@ class FilterBuilderTest {
         println(myEntityQuery)
         println(Arrays.toString(myEntityExecutor.selectionArgs.toTypedArray()))
         Assert.assertEquals(
-                "UUID LIKE ? ESCAPE '\\' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<? UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
+                "UUID LIKE ? ESCAPE '\\' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<?UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
                 myEntityQuery
         )
     }
 
-    internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEntityFilterBuilder.SortOrder, String>(Uri.parse("http://google.com")) {
+    @Test
+    fun testLike() {
+        Assert.assertEquals(
+                "UUID LIKE ?",
+                MyEntityFilterBuilder()
+                        .uuid.like("2%")
+                        .selection.toString()
+        )
+    }
 
-        val uuid = addFieldFilter<String?>("UUID")
-        val parentUuid = addFieldFilter<String?>("PARENT_UUID")
-        val price = addFieldFilter<BigDecimal?, Int?>("PRICE_OUT", {it?.toInt()?.times(100) })
-        val alcoholProductKindCode = addFieldFilter<Long?, Int?>("ALCOHOL_PRODUCT_KIND_CODE", {it?.toInt()?.times(10)})
-        val enumField = addFieldFilter<MyEntityEnum>("ENUM_FIELD")
+    @Test
+    fun testSortOrderByOneField() {
+        Assert.assertEquals(
+                "PRICE_OUT ASC",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .sortOrder(MyEntityFilterBuilder.SortOrder().price.asc())
+                        .sortOrderValue
+        )
 
-        override val currentQuery: MyEntityFilterBuilder
-            get() = this
+        Assert.assertEquals(
+                "PRICE_OUT DESC",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .sortOrder(MyEntityFilterBuilder.SortOrder().price.desc())
+                        .sortOrderValue
+        )
+    }
 
-        internal class SortOrder : FilterBuilder.SortOrder<SortOrder>() {
+    @Test
+    fun testSortOrderByManyField() {
+        Assert.assertEquals(
+                "PRICE_OUT ASC,ALCOHOL_PRODUCT_KIND_CODE DESC",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .sortOrder(MyEntityFilterBuilder.SortOrder()
+                                .price.asc()
+                                .alcoholProductKindCode.desc())
+                        .sortOrderValue
+        )
 
-            val uuid = addFieldSorter("UUID")
-            val parentUuid = addFieldSorter("PARENT_UUID")
-            val price = addFieldSorter("PRICE_OUT")
-            val alcoholProductKindCode = addFieldSorter("ALCOHOL_PRODUCT_KIND_CODE")
-            val enumField = addFieldSorter("ENUM_FIELD")
+        Assert.assertEquals(
+                "PRICE_OUT ASC,ALCOHOL_PRODUCT_KIND_CODE DESC,ENUM_FIELD ASC",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .sortOrder(MyEntityFilterBuilder.SortOrder()
+                                .price.asc()
+                                .alcoholProductKindCode.desc()
+                                .enumField.asc()
+                        )
+                        .sortOrderValue
+        )
+    }
 
-            override val currentSortOrder: SortOrder
-                get() = this
-
-        }
-
-        override fun getValue(cursor: Cursor<String>): String {
-            return cursor.getString(1)
-        }
+    @Test
+    fun testLimitField() {
+        Assert.assertEquals(
+                " LIMIT 100",
+                MyEntityFilterBuilder()
+                        .uuid.equal("someUuid")
+                        .limit(100)
+                        .limitValue
+        )
     }
 
 }
