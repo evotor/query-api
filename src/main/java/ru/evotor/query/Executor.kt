@@ -53,7 +53,7 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
     }
 
     fun execute(context: Context): Cursor<R> {
-        val sortOrderLimit = sortOrderValue + limitValue
+        val sortOrderLimit = (if (sortOrderValue.isEmpty()) "ROWID" else sortOrderValue) + limitValue
         Log.v("Executor", "Executing query: tableUri=$tableUri selection=${if (selection.isEmpty()) null else selection.toString()} selectionArgs=${Arrays.toString(selectionArgs.toTypedArray())} sortOrderLimit=${if (sortOrderLimit.isEmpty()) null else sortOrderLimit}")
         return object : Cursor<R>(context.contentResolver.query(
                 tableUri,
