@@ -28,16 +28,8 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
         return appendSelection(operator + if (including) "=?" else "?", convertArg(value))
     }
 
-    fun like(text: String, useEscape: Boolean = false): Executor<Q, S, R> {
-        return appendSelection(
-                " LIKE ?${if (useEscape) " ESCAPE '\\'" else ""}",
-                if (useEscape)
-                    "%${text.replace("\\", "\\" + "\\")
-                            .replace("%", "\\" + "%")
-                            .replace("_", "\\" + "_")}%"
-                else
-                    text
-        )
+    fun like(text: String, escape: Char? = null): Executor<Q, S, R> {
+        return appendSelection(" LIKE ?${if (escape != null) " ESCAPE '$escape'" else ""}", text)
     }
 
     fun between(leftValue: V, rightValue: V): Executor<Q, S, R> {
