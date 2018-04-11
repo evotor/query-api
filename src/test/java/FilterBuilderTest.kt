@@ -16,7 +16,7 @@ class FilterBuilderTest {
     fun testMyEntityFilterBuilder() {
         val insideNumbers: Array<BigDecimal?> = arrayOf(BigDecimal(1), BigDecimal(2), null, BigDecimal(3))
         val myEntityExecutor = MyEntityFilterBuilder()
-                .uuid.like("%Молоко_40%%", true)
+                .uuid.like("Молоко_40/%", '/')
                 .and().alcoholProductKindCode.equal(null)
                 .or(MyEntityFilterBuilder()
                         .price.inside(insideNumbers)
@@ -35,7 +35,7 @@ class FilterBuilderTest {
         println(myEntityQuery)
         println(Arrays.toString(myEntityExecutor.selectionArgs.toTypedArray()))
         Assert.assertEquals(
-                "UUID LIKE ? ESCAPE '\\' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<?UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
+                "UUID LIKE ? ESCAPE '/' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<?UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
                 myEntityQuery
         )
     }
