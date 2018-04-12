@@ -21,24 +21,39 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
         private set
 
     fun and(intersection: Executor<Q, S, R>): Executor<Q, S, R> {
-        selection.append(" AND (").append(intersection.selection).append(")")
-        selectionArgs.addAll(intersection.selectionArgs)
-        return this
+        return intersectionUnion("AND", intersection)
     }
 
     fun or(union: Executor<Q, S, R>): Executor<Q, S, R> {
-        selection.append(" OR (").append(union.selection).append(")")
-        selectionArgs.addAll(union.selectionArgs)
+        return intersectionUnion("OR", union)
+    }
+
+    private fun intersectionUnion(operator: String, target: Executor<Q, S, R>): Executor<Q, S, R> {
+        if (target.selection.isNotBlank()) {
+            val wasNotBlank = selection.isNotBlank()
+            if (wasNotBlank) {
+                selection.append(" $operator (")
+            }
+            selection.append(target.selection)
+            if (wasNotBlank) {
+                selection.append(")")
+            }
+            selectionArgs.addAll(target.selectionArgs)
+        }
         return this
     }
 
     fun and(): Q {
-        selection.append(" AND ")
+        if (selection.isNotBlank()) {
+            selection.append(" AND ")
+        }
         return currentQuery
     }
 
     fun or(): Q {
-        selection.append(" OR ")
+        if (selection.isNotBlank()) {
+            selection.append(" OR ")
+        }
         return currentQuery
     }
 
