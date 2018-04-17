@@ -18,6 +18,14 @@ abstract class FilterInitter<Q, S : FilterBuilder.SortOrder<S>, R> {
         }
     }
 
+    fun <T : FilterBuilder.Inner<Q, S, R>> addInnerFilterBuilder(target: T): T {
+        target.appendFieldSelection = { fieldName: String, s: String, args: Array<out String?> ->
+            appendFieldSelection(fieldName, s, *args)
+        }
+        return target
+    }
+
+
     abstract fun appendFieldSelection(fieldName: String, s: String, vararg args: String?): Executor<Q, S, R>
 
     abstract class SortOrder<S : FilterBuilder.SortOrder<S>> {
@@ -28,6 +36,11 @@ abstract class FilterInitter<Q, S : FilterBuilder.SortOrder<S>, R> {
                     return appendFieldOrder(fieldName, edition)
                 }
             }
+        }
+
+        fun <T : FilterBuilder.Inner.SortOrder<S>> addInnerSortOrder(target: T): T {
+            target.appendFieldOrder = { fieldName, edition -> appendFieldOrder(fieldName, edition) }
+            return target
         }
 
         protected abstract fun appendFieldOrder(fieldName: String, edition: String): S

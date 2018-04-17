@@ -25,13 +25,6 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
         }
     }
 
-    fun <T : Inner<Q, S, R>> addInnerFilterBuilder(target: T): T {
-        target.appendFieldSelection = { fieldName: String, s: String, args: Array<out String?> ->
-            appendFieldSelection(fieldName, s, *args)
-        }
-        return target
-    }
-
     fun noFilters(): Executor<Q, S, R> {
         executor.selection = StringBuilder()
         executor.selectionArgs = ArrayList()
@@ -71,11 +64,6 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
         internal val value = StringBuilder()
 
         protected abstract val currentSortOrder: S
-
-        fun <T : Inner.SortOrder<S>> addInnerSortOrder(target: T): T {
-            target.appendFieldOrder = { fieldName, edition -> appendFieldOrder(fieldName, edition) }
-            return target
-        }
 
         override fun appendFieldOrder(fieldName: String, edition: String): S {
             value.append(fieldName + edition)

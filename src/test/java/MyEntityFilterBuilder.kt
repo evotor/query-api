@@ -18,10 +18,13 @@ internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEn
         // Конвертируем null в пустую строку
         it ?: ""
     })
+    class IIFB: Inner<MyEntityFilterBuilder, MyEntityFilterBuilder.SortOrder, String>() {
+        val innerInnerField = addFieldFilter<String>("INNER_INNER_FIELD")
+    }
     class IFB : Inner<MyEntityFilterBuilder, MyEntityFilterBuilder.SortOrder, String>() {
         val innerField = addFieldFilter<String>("INNER_FIELD")
         val innerField2 = addFieldFilter<Int?, String?>("INNER_FIELD2", {it?.toString()})
-        val innerField3 = addFieldFilter<BigDecimal>("INNER_FIELD3")
+        val innerField3 = addInnerFilterBuilder(IIFB())
     }
     val innerFilterBuilder = addInnerFilterBuilder(IFB())
 
