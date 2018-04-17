@@ -4,7 +4,7 @@ package ru.evotor.query
  * Created by a.lunkov on 27.02.2018.
  */
 
-abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
+abstract class FieldFilter<V, T, Q, S : FilterBuilder.SortOrder<S>, R> (private val typeConverter: ((V) -> T)?) {
 
     fun equal(value: V): Executor<Q, S, R> {
         val result = convertArg(value) ?: return appendSelection(" IS NULL")
@@ -63,7 +63,7 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
         values.forEach {
             val arg = convertArg(it)
             if (arg != null) {
-                if(!args.contains(arg)) {
+                if (!args.contains(arg)) {
                     selection += ",?"
                     args.add(arg)
                 }
@@ -83,8 +83,14 @@ abstract class FieldFilter<V, Q, S : FilterBuilder.SortOrder<S>, R> {
         )
     }
 
-    protected abstract fun convertArg(source: V): String?
+    private fun convertArg(source: V): String? {
+        var result: Any? = if (typeConverter != null) typeConverter.invoke(source) else source
+        if (result is Boolean) {
+            result = if (result) "1" else "0"
+        }
+        return result?.toString()
+    }
 
-    protected abstract fun appendSelection(selection: String, vararg args: String?): Executor<Q, S, R>
+    protected abstract fun appendSelection(s: String, vararg args: String?): Executor<Q, S, R>
 
 }

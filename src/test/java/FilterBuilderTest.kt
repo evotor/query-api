@@ -18,6 +18,8 @@ class FilterBuilderTest {
         val myEntityExecutor = MyEntityFilterBuilder()
                 .uuid.like("Молоко_40/%", '/')
                 .and().alcoholProductKindCode.equal(null)
+                .and().innerFilterBuilder.innerField.greater("123")
+                .and().innerFilterBuilder.innerField2.lower(123)
                 .or(MyEntityFilterBuilder()
                         .price.inside(insideNumbers)
                         .and().parentUuid.notEqual(null)
@@ -28,14 +30,16 @@ class FilterBuilderTest {
                 .sortOrder(MyEntityFilterBuilder.SortOrder()
                         .uuid.asc()
                         .enumField.desc()
-                        .parentUuid.asc())
+                        .parentUuid.asc()
+                        .innerFilterBuilder.innerField.asc()
+                        .innerFilterBuilder.innerField2.desc())
                 .limit(10)
         var myEntityQuery = myEntityExecutor.selection.toString()
         myEntityQuery += myEntityExecutor.sortOrderValue + myEntityExecutor.limitValue
         println(myEntityQuery)
         println(Arrays.toString(myEntityExecutor.selectionArgs.toTypedArray()))
         Assert.assertEquals(
-                "UUID LIKE ? ESCAPE '/' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<?UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC LIMIT 10",
+                "UUID LIKE ? ESCAPE '/' AND ALCOHOL_PRODUCT_KIND_CODE IS NULL AND INNER_FIELD>? AND INNER_FIELD2<? OR (PRICE_OUT IS NULL OR PRICE_OUT IN (?,?,?) AND PARENT_UUID IS NOT NULL AND (ALCOHOL_PRODUCT_KIND_CODE>=? AND ENUM_FIELD=?)) AND PRICE_OUT<?UUID ASC,ENUM_FIELD DESC,PARENT_UUID ASC,INNER_FIELD ASC,INNER_FIELD2 DESC LIMIT 10",
                 myEntityQuery
         )
     }

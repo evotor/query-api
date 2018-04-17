@@ -18,6 +18,13 @@ internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEn
         // Конвертируем null в пустую строку
         it ?: ""
     })
+    class IFB : Inner<MyEntityFilterBuilder, MyEntityFilterBuilder.SortOrder, String>() {
+        val innerField = addFieldFilter<String>("INNER_FIELD")
+        val innerField2 = addFieldFilter<Int?, String?>("INNER_FIELD2", {it?.toString()})
+        val innerField3 = addFieldFilter<BigDecimal>("INNER_FIELD3")
+    }
+    val innerFilterBuilder = addInnerFilterBuilder(IFB())
+
 
     override val currentQuery: MyEntityFilterBuilder
         get() = this
@@ -29,6 +36,12 @@ internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEn
         val price = addFieldSorter("PRICE_OUT")
         val alcoholProductKindCode = addFieldSorter("ALCOHOL_PRODUCT_KIND_CODE")
         val enumField = addFieldSorter("ENUM_FIELD")
+        class ISO : Inner.SortOrder<SortOrder>() {
+            val innerField = addFieldSorter("INNER_FIELD")
+            val innerField2 = addFieldSorter("INNER_FIELD2")
+            val innerField3 = addFieldSorter("INNER_FIELD3")
+        }
+        val innerFilterBuilder = addInnerSortOrder(ISO())
 
         override val currentSortOrder: SortOrder
             get() = this

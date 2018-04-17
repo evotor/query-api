@@ -6,7 +6,7 @@ import android.net.Uri
  * Created by a.lunkov on 27.02.2018.
  */
 
-abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri) {
+abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri) : FilterInitter<Q, S, R>() {
 
     protected abstract val currentQuery: Q
 
@@ -25,32 +25,11 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
         }
     }
 
-    fun <V> addFieldFilter(fieldName: String): FieldFilter<V, Q, S, R> {
-        return initFieldFilter<V, V>(fieldName, null)
-    }
-
-    fun <V, T> addFieldFilter(fieldName: String, typeConverter: (V) -> T): FieldFilter<V, Q, S, R> {
-        return initFieldFilter(fieldName, typeConverter)
-    }
-
-    private fun <V, T> initFieldFilter(fieldName: String, typeConverter: ((V) -> T)?): FieldFilter<V, Q, S, R> {
-        return object : FieldFilter<V, Q, S, R>() {
-            override fun convertArg(source: V): String? {
-                var result: Any? = if (typeConverter != null) typeConverter.invoke(source) else source
-                if (result is Boolean) {
-                    result = if (result) "1" else "0"
-                }
-                return result?.toString()
-            }
-
-            override fun appendSelection(selection: String, vararg args: String?): Executor<Q, S, R> {
-                executor.selection.append(fieldName + selection)
-                args.forEach {
-                    executor.selectionArgs.add(it)
-                }
-                return executor
-            }
+    fun <T : Inner<Q, S, R>> addInnerFilterBuilder(target: T): T {
+        target.appendFieldSelection = { fieldName: String, s: String, args: Array<out String?> ->
+            appendFieldSelection(fieldName, s, *args)
         }
+        return target
     }
 
     fun noFilters(): Executor<Q, S, R> {
@@ -59,21 +38,51 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
         return executor
     }
 
-    abstract class SortOrder<S : SortOrder<S>> {
+    override fun appendFieldSelection(fieldName: String, s: String, vararg args: String?): Executor<Q, S, R> {
+        executor.selection.append(fieldName + s)
+        args.forEach {
+            executor.selectionArgs.add(it)
+        }
+        return executor
+    }
+
+    abstract class Inner<Q, S : FilterBuilder.SortOrder<S>, R> : FilterInitter<Q, S, R>() {
+
+        internal var appendFieldSelection: ((fieldName: String, s: String, args: Array<out String?>) -> Executor<Q, S, R>)? = null
+
+        override fun appendFieldSelection(fieldName: String, s: String, vararg args: String?): Executor<Q, S, R> {
+            return appendFieldSelection!!.invoke(fieldName, s, args)
+        }
+
+        abstract class SortOrder<S : FilterBuilder.SortOrder<S>> : FilterInitter.SortOrder<S>() {
+
+            internal var appendFieldOrder: ((fieldName: String, edition: String) -> S)? = null
+
+            override fun appendFieldOrder(fieldName: String, edition: String): S {
+                return appendFieldOrder!!.invoke(fieldName, edition)
+            }
+
+        }
+
+    }
+
+    abstract class SortOrder<S : FilterBuilder.SortOrder<S>> : FilterInitter.SortOrder<S>() {
 
         internal val value = StringBuilder()
 
         protected abstract val currentSortOrder: S
 
-        fun addFieldSorter(fieldName: String): FieldSorter<S> {
-            return object : FieldSorter<S>() {
-                override fun append(edition: String): S {
-                    value.append(fieldName + edition)
-                    return currentSortOrder
-                }
-            }
+        fun <T : Inner.SortOrder<S>> addInnerSortOrder(target: T): T {
+            target.appendFieldOrder = { fieldName, edition -> appendFieldOrder(fieldName, edition) }
+            return target
+        }
+
+        override fun appendFieldOrder(fieldName: String, edition: String): S {
+            value.append(fieldName + edition)
+            return currentSortOrder
         }
 
     }
+
 
 }
