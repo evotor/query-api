@@ -1,3 +1,4 @@
+import android.content.Context
 import android.net.Uri
 import ru.evotor.query.Cursor
 import ru.evotor.query.FilterBuilder
@@ -28,10 +29,6 @@ internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEn
     }
     val innerFilterBuilder = addInnerFilterBuilder(IFB())
 
-
-    override val currentQuery: MyEntityFilterBuilder
-        get() = this
-
     internal class SortOrder : FilterBuilder.SortOrder<SortOrder>() {
 
         val uuid = addFieldSorter("UUID")
@@ -46,12 +43,9 @@ internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEn
         }
         val innerFilterBuilder = addInnerSortOrder(ISO())
 
-        override val currentSortOrder: SortOrder
-            get() = this
-
     }
 
-    override fun getValue(cursor: Cursor<String>): String {
+    override fun getValue(context: Context, cursor: Cursor<String>): String {
         return cursor.getString(1)
     }
 }
