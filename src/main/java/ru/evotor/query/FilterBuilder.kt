@@ -1,5 +1,6 @@
 package ru.evotor.query
 
+import android.content.Context
 import android.net.Uri
 
 /**
@@ -8,20 +9,18 @@ import android.net.Uri
 
 abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri) : FilterInitter<Q, S, R>() {
 
-    protected abstract val currentQuery: Q
-
-    protected abstract fun getValue(cursor: Cursor<R>): R
+    protected abstract fun getValue(context: Context, cursor: Cursor<R>): R
 
     private val executor: Executor<Q, S, R>
 
     init {
         executor = object : Executor<Q, S, R>(tableUri) {
-            override fun getValue(cursor: Cursor<R>): R {
-                return this@FilterBuilder.getValue(cursor)
+            override fun getValue(context: Context, cursor: Cursor<R>): R {
+                return this@FilterBuilder.getValue(context, cursor)
             }
 
             override val currentQuery: Q
-                get() = this@FilterBuilder.currentQuery
+                get() = this@FilterBuilder as Q
         }
     }
 
@@ -63,11 +62,9 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
 
         internal val value = StringBuilder()
 
-        protected abstract val currentSortOrder: S
-
         override fun appendFieldOrder(fieldName: String, edition: String): S {
             value.append(fieldName + edition)
-            return currentSortOrder
+            return this as S
         }
 
     }

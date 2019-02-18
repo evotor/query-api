@@ -78,11 +78,11 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
                 if (sortOrderLimit.isEmpty()) null else sortOrderLimit
         )) {
             override fun getValue(): R {
-                return this@Executor.getValue(this)
+                return this@Executor.getValue(context, this)
             }
         }
     }
 
-    protected abstract fun getValue(cursor: Cursor<R>): R
+    protected abstract fun getValue(context: Context, cursor: Cursor<R>): R
 
 }
