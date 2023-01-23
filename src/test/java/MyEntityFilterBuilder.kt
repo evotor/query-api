@@ -45,7 +45,7 @@ internal class MyEntityFilterBuilder : FilterBuilder<MyEntityFilterBuilder, MyEn
 
     }
 
-    override fun getValue(context: Context, cursor: Cursor<String>): String {
+    override fun getValue(cursor: Cursor<String>): String {
         return cursor.getString(1)
     }
 }

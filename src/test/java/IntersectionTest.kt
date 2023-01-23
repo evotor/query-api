@@ -1,3 +1,4 @@
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,6 +36,7 @@ class IntersectionTest {
 
     @Test
     fun testIntersectionOfLikeAndNoFilter() {
+        val context = InstrumentationRegistry.getInstrumentation().context
         MyEntityFilterBuilder()
                 .name.like("Test")
                 .and(
@@ -46,6 +48,12 @@ class IntersectionTest {
                     Assert.assertEquals(arrayListOf<String>("Test"), it.selectionArgs)
                     Assert.assertEquals("", it.limitValue)
                     Assert.assertEquals("", it.sortOrderValue)
+
+                    it
                 }
+            .execute(context)
+            .also {
+                Assert.assertEquals(null, it?.getValue())
+            }
     }
 }
