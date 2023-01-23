@@ -7,6 +7,7 @@ android {
 
     defaultConfig {
         minSdkVersion 22
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 29
         versionCode 3
         versionName "1.2.0"
@@ -75,15 +76,6 @@ publishing {
             //generate pom nodes for dependencies
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.compile.allDependencies.each { dependency ->
-                    if (dependency.group) {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', dependency.group)
-                        dependencyNode.appendNode('artifactId', dependency.name)
-                        dependencyNode.appendNode('version', dependency.version)
-                    }
-                }
-
                 configurations.api.allDependencies.each { dependency ->
                     if (dependency.group) {
                         def dependencyNode = dependenciesNode.appendNode('dependency')
