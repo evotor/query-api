@@ -3,6 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
 android {
+    namespace 'ru.evotor.query_api'
+
     compileSdkVersion 30
 
     defaultConfig {
@@ -82,7 +84,7 @@ publishing {
             artifactId "query-api"
             version "1.2.0"
             artifact(sourceJar)
-            artifact "${project.buildDir}/outputs/aar/${project.archivesBaseName}-release.aar"
+            artifact "${project.buildDir}/outputs/aar/${artifactId}-release.aar"
 
             //generate pom nodes for dependencies
             pom.withXml {
