@@ -38,6 +38,12 @@ android {
     packagingOptions {
         exclude 'META-INF/*_module'
     }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
 }
 
 group = 'com.github.evotor'
@@ -81,33 +87,13 @@ task sourceJar(type: Jar) {
 
 publishing {
     publications {
-        mavenKotlin(MavenPublication) {
+        release(MavenPublication) {
             groupId 'com.github.evotor'
             artifactId "query-api"
             version "1.2.0"
-            artifact(sourceJar)
-            artifact "${project.buildDir}/outputs/aar/${artifactId}-release.aar"
 
-            //generate pom nodes for dependencies
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.api.allDependencies.each { dependency ->
-                    if (dependency.group) {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', dependency.group)
-                        dependencyNode.appendNode('artifactId', dependency.name)
-                        dependencyNode.appendNode('version', dependency.version)
-                    }
-                }
-
-                configurations.implementation.allDependencies.each { dependency ->
-                    if (dependency.group) {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', dependency.group)
-                        dependencyNode.appendNode('artifactId', dependency.name)
-                        dependencyNode.appendNode('version', dependency.version)
-                    }
-                }
+            afterEvaluate {
+                from components.release
             }
         }
     }
