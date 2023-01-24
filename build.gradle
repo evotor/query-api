@@ -39,6 +39,12 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.5.1"
 }
 
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    google()
+}
+
 buildscript {
 
     repositories {
