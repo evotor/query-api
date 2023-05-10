@@ -67,22 +67,34 @@ abstract class Executor<Q, S : FilterBuilder.SortOrder<S>, R>(private val tableU
         return this
     }
 
-    fun execute(context: Context): Cursor<R> {
-        val sortOrderLimit = (if (sortOrderValue.isEmpty()) "ROWID" else sortOrderValue) + limitValue
-        Log.v("Executor", "Executing query: tableUri=$tableUri selection=${if (selection.isEmpty()) null else selection.toString()} selectionArgs=${Arrays.toString(selectionArgs.toTypedArray())} sortOrderLimit=${if (sortOrderLimit.isEmpty()) null else sortOrderLimit}")
-        return object : Cursor<R>(context.contentResolver.query(
-                tableUri,
-                null,
-                if (selection.isEmpty()) null else selection.toString(),
-                if (selectionArgs.isEmpty()) null else selectionArgs.toTypedArray(),
-                if (sortOrderLimit.isEmpty()) null else sortOrderLimit
-        )) {
-            override fun getValue(): R {
-                return this@Executor.getValue(context, this)
+    /**
+     * You should close Cursor by yourself
+     */
+    fun execute(context: Context): Cursor<R>? {
+        val sortOrderLimit =
+            (if (sortOrderValue.isEmpty()) "ROWID" else sortOrderValue) + limitValue
+        Log.v(
+            "Executor",
+            "Executing query: tableUri=$tableUri selection=${if (selection.isEmpty()) null else selection.toString()} selectionArgs=${
+                Arrays.toString(selectionArgs.toTypedArray())
+            } sortOrderLimit=${if (sortOrderLimit.isEmpty()) null else sortOrderLimit}"
+        )
+        val cursor = context.contentResolver.query(
+            tableUri,
+            null,
+            if (selection.isEmpty()) null else selection.toString(),
+            if (selectionArgs.isEmpty()) null else selectionArgs.toTypedArray(),
+            if (sortOrderLimit.isEmpty()) null else sortOrderLimit
+        )
+        return cursor?.let {
+            return object : Cursor<R>(it) {
+                override fun getValue(): R {
+                    return this@Executor.getValue(this)
+                }
             }
         }
     }
 
-    protected abstract fun getValue(context: Context, cursor: Cursor<R>): R
+    protected abstract fun getValue(cursor: Cursor<R>): R
 
 }

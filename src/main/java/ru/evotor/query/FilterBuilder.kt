@@ -1,22 +1,22 @@
 package ru.evotor.query
 
-import android.content.Context
 import android.net.Uri
 
 /**
  * Created by a.lunkov on 27.02.2018.
  */
 
-abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri) : FilterInitter<Q, S, R>() {
+abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri) :
+    FilterInitter<Q, S, R>() {
 
-    protected abstract fun getValue(context: Context, cursor: Cursor<R>): R
+    protected abstract fun getValue(cursor: Cursor<R>): R
 
     private val executor: Executor<Q, S, R>
 
     init {
         executor = object : Executor<Q, S, R>(tableUri) {
-            override fun getValue(context: Context, cursor: Cursor<R>): R {
-                return this@FilterBuilder.getValue(context, cursor)
+            override fun getValue(cursor: Cursor<R>): R {
+                return this@FilterBuilder.getValue(cursor)
             }
 
             override val currentQuery: Q
@@ -30,7 +30,11 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
         return executor
     }
 
-    override fun appendFieldSelection(fieldName: String, s: String, vararg args: String?): Executor<Q, S, R> {
+    override fun appendFieldSelection(
+        fieldName: String,
+        s: String,
+        vararg args: String?
+    ): Executor<Q, S, R> {
         executor.selection.append(fieldName + s)
         args.forEach {
             executor.selectionArgs.add(it)
@@ -40,9 +44,14 @@ abstract class FilterBuilder<Q, S : FilterBuilder.SortOrder<S>, R>(tableUri: Uri
 
     abstract class Inner<Q, S : FilterBuilder.SortOrder<S>, R> : FilterInitter<Q, S, R>() {
 
-        internal var appendFieldSelection: ((fieldName: String, s: String, args: Array<out String?>) -> Executor<Q, S, R>)? = null
+        internal var appendFieldSelection: ((fieldName: String, s: String, args: Array<out String?>) -> Executor<Q, S, R>)? =
+            null
 
-        override fun appendFieldSelection(fieldName: String, s: String, vararg args: String?): Executor<Q, S, R> {
+        override fun appendFieldSelection(
+            fieldName: String,
+            s: String,
+            vararg args: String?
+        ): Executor<Q, S, R> {
             return appendFieldSelection!!.invoke(fieldName, s, args)
         }
 
